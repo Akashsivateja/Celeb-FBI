@@ -14,27 +14,26 @@ def load_model():
 
 model = load_model()  # Load the model once at the start
 
-# Prediction function
+# Image Preprocessing
 def predict(image):
-    img = image.resize((128, 128))  # Resize to 128x128 (make sure it matches the input shape expected by the model)
+    img = image.resize((128, 128))  # Resize to 128x128
     img_array = np.array(img)  # Convert image to numpy array
-    
-    if img_array.shape[-1] == 4:  # Check for PNG images with an alpha channel
+    if img_array.shape[-1] == 4:  # Handle PNG images with an alpha channel
         img_array = img_array[:, :, :3]  # Remove the alpha channel, keep RGB
-    
     img_array = img_array / 255.0  # Normalize pixel values to the range [0, 1]
     img_array = np.expand_dims(img_array, axis=0)  # Add batch dimension (e.g., shape becomes (1, 128, 128, 3))
 
-    print("Image shape after processing:", img_array.shape)  # Debugging line
+    # Debugging line: check the shape of the image being passed to the model
+    st.write(f"Image shape after processing: {img_array.shape}")
 
-    # Get predictions from the model
+    # Make prediction
     gender, height, weight, age = model.predict(img_array)
 
-    # Debugging: Print predictions
-    print("Gender Prediction:", gender)
-    print("Height Prediction:", height)
-    print("Weight Prediction:", weight)
-    print("Age Prediction:", age)
+    # Debugging: print predictions
+    st.write(f"Predicted Gender: {gender}")
+    st.write(f"Predicted Height: {height}")
+    st.write(f"Predicted Weight: {weight}")
+    st.write(f"Predicted Age: {age}")
 
     gender_label = "Male" if gender[0][0] < 0.5 else "Female"
     height_cm = round(height[0][0], 2)
@@ -43,12 +42,13 @@ def predict(image):
 
     return gender_label, height_cm, weight_kg, age_yrs
 
+
 # Upload UI
 uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
 
 if uploaded_file is not None:
-    image = Image.open(uploaded_file)  # Ensure the image is loaded after the user uploads
-    st.image(image, caption="Uploaded Image", use_column_width=True)
+    image = Image.open(uploaded_file)
+    st.image(image, caption="Uploaded Image", use_container_width=True)
 
     if st.button("Predict"):
         gender, height, weight, age = predict(image)
